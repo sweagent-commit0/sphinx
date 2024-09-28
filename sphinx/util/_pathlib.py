@@ -11,36 +11,18 @@ or explicit string coercion.
 In Sphinx 9, ``Path`` objects will be expected and returned in all instances
 that ``_StrPath`` is currently used.
 """
-
 from __future__ import annotations
-
 import sys
 import warnings
 from pathlib import Path, PosixPath, PurePath, WindowsPath
 from typing import Any
-
 from sphinx.deprecation import RemovedInSphinx90Warning
-
 _STR_METHODS = frozenset(str.__dict__)
 _PATH_NAME = Path().__class__.__name__
-
-_MSG = (
-    'Sphinx 9 will drop support for representing paths as strings. '
-    'Use "pathlib.Path" or "os.fspath" instead.'
-)
-
-# https://docs.python.org/3/library/stdtypes.html#typesseq-common
-# https://docs.python.org/3/library/stdtypes.html#string-methods
-
+_MSG = 'Sphinx 9 will drop support for representing paths as strings. Use "pathlib.Path" or "os.fspath" instead.'
 if sys.platform == 'win32':
+
     class _StrPath(WindowsPath):
-        def replace(  # type: ignore[override]
-            self, old: str, new: str, count: int = -1, /,
-        ) -> str:
-            # replace exists in both Path and str;
-            # in Path it makes filesystem changes, so we use the safer str version
-            warnings.warn(_MSG, RemovedInSphinx90Warning, stacklevel=2)
-            return self.__str__().replace(old, new, count)  # NoQA:  PLC2801
 
         def __getattr__(self, item: str) -> Any:
             if item in _STR_METHODS:
@@ -82,14 +64,8 @@ if sys.platform == 'win32':
             warnings.warn(_MSG, RemovedInSphinx90Warning, stacklevel=2)
             return len(self.__str__())
 else:
+
     class _StrPath(PosixPath):
-        def replace(  # type: ignore[override]
-            self, old: str, new: str, count: int = -1, /,
-        ) -> str:
-            # replace exists in both Path and str;
-            # in Path it makes filesystem changes, so we use the safer str version
-            warnings.warn(_MSG, RemovedInSphinx90Warning, stacklevel=2)
-            return self.__str__().replace(old, new, count)  # NoQA:  PLC2801
 
         def __getattr__(self, item: str) -> Any:
             if item in _STR_METHODS:

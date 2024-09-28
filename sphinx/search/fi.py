@@ -1,113 +1,12 @@
 """Finnish search language: includes the JS Finnish stemmer."""
-
 from __future__ import annotations
-
 from typing import TYPE_CHECKING, Dict
-
 import snowballstemmer
-
 from sphinx.search import SearchLanguage, parse_stop_word
-
-finnish_stopwords = parse_stop_word('''
-| source: https://snowball.tartarus.org/algorithms/finnish/stop.txt
-| forms of BE
-
-olla
-olen
-olet
-on
-olemme
-olette
-ovat
-ole        | negative form
-
-oli
-olisi
-olisit
-olisin
-olisimme
-olisitte
-olisivat
-olit
-olin
-olimme
-olitte
-olivat
-ollut
-olleet
-
-en         | negation
-et
-ei
-emme
-ette
-eivät
-
-|Nom   Gen    Acc    Part   Iness   Elat    Illat  Adess   Ablat   Allat   Ess    Trans
-minä   minun  minut  minua  minussa minusta minuun minulla minulta minulle               | I
-sinä   sinun  sinut  sinua  sinussa sinusta sinuun sinulla sinulta sinulle               | you
-hän    hänen  hänet  häntä  hänessä hänestä häneen hänellä häneltä hänelle               | he she
-me     meidän meidät meitä  meissä  meistä  meihin meillä  meiltä  meille                | we
-te     teidän teidät teitä  teissä  teistä  teihin teillä  teiltä  teille                | you
-he     heidän heidät heitä  heissä  heistä  heihin heillä  heiltä  heille                | they
-
-tämä   tämän         tätä   tässä   tästä   tähän  tällä   tältä   tälle   tänä   täksi  | this
-tuo    tuon          tuota  tuossa  tuosta  tuohon tuolla  tuolta  tuolle  tuona  tuoksi | that
-se     sen           sitä   siinä   siitä   siihen sillä   siltä   sille   sinä   siksi  | it
-nämä   näiden        näitä  näissä  näistä  näihin näillä  näiltä  näille  näinä  näiksi | these
-nuo    noiden        noita  noissa  noista  noihin noilla  noilta  noille  noina  noiksi | those
-ne     niiden        niitä  niissä  niistä  niihin niillä  niiltä  niille  niinä  niiksi | they
-
-kuka   kenen kenet   ketä   kenessä kenestä keneen kenellä keneltä kenelle kenenä keneksi| who
-ketkä  keiden ketkä  keitä  keissä  keistä  keihin keillä  keiltä  keille  keinä  keiksi | (pl)
-mikä   minkä minkä   mitä   missä   mistä   mihin  millä   miltä   mille   minä   miksi  | which what
-mitkä                                                                                    | (pl)
-
-joka   jonka         jota   jossa   josta   johon  jolla   jolta   jolle   jona   joksi  | who which
-jotka  joiden        joita  joissa  joista  joihin joilla  joilta  joille  joina  joiksi | (pl)
-
-| conjunctions
-
-että   | that
-ja     | and
-jos    | if
-koska  | because
-kuin   | than
-mutta  | but
-niin   | so
-sekä   | and
-sillä  | for
-tai    | or
-vaan   | but
-vai    | or
-vaikka | although
-
-
-| prepositions
-
-kanssa  | with
-mukaan  | according to
-noin    | about
-poikki  | across
-yli     | over, across
-
-| other
-
-kun    | when
-niin   | so
-nyt    | now
-itse   | self
-''')
-
+finnish_stopwords = parse_stop_word('\n| source: https://snowball.tartarus.org/algorithms/finnish/stop.txt\n| forms of BE\n\nolla\nolen\nolet\non\nolemme\nolette\novat\nole        | negative form\n\noli\nolisi\nolisit\nolisin\nolisimme\nolisitte\nolisivat\nolit\nolin\nolimme\nolitte\nolivat\nollut\nolleet\n\nen         | negation\net\nei\nemme\nette\neivät\n\n|Nom   Gen    Acc    Part   Iness   Elat    Illat  Adess   Ablat   Allat   Ess    Trans\nminä   minun  minut  minua  minussa minusta minuun minulla minulta minulle               | I\nsinä   sinun  sinut  sinua  sinussa sinusta sinuun sinulla sinulta sinulle               | you\nhän    hänen  hänet  häntä  hänessä hänestä häneen hänellä häneltä hänelle               | he she\nme     meidän meidät meitä  meissä  meistä  meihin meillä  meiltä  meille                | we\nte     teidän teidät teitä  teissä  teistä  teihin teillä  teiltä  teille                | you\nhe     heidän heidät heitä  heissä  heistä  heihin heillä  heiltä  heille                | they\n\ntämä   tämän         tätä   tässä   tästä   tähän  tällä   tältä   tälle   tänä   täksi  | this\ntuo    tuon          tuota  tuossa  tuosta  tuohon tuolla  tuolta  tuolle  tuona  tuoksi | that\nse     sen           sitä   siinä   siitä   siihen sillä   siltä   sille   sinä   siksi  | it\nnämä   näiden        näitä  näissä  näistä  näihin näillä  näiltä  näille  näinä  näiksi | these\nnuo    noiden        noita  noissa  noista  noihin noilla  noilta  noille  noina  noiksi | those\nne     niiden        niitä  niissä  niistä  niihin niillä  niiltä  niille  niinä  niiksi | they\n\nkuka   kenen kenet   ketä   kenessä kenestä keneen kenellä keneltä kenelle kenenä keneksi| who\nketkä  keiden ketkä  keitä  keissä  keistä  keihin keillä  keiltä  keille  keinä  keiksi | (pl)\nmikä   minkä minkä   mitä   missä   mistä   mihin  millä   miltä   mille   minä   miksi  | which what\nmitkä                                                                                    | (pl)\n\njoka   jonka         jota   jossa   josta   johon  jolla   jolta   jolle   jona   joksi  | who which\njotka  joiden        joita  joissa  joista  joihin joilla  joilta  joille  joina  joiksi | (pl)\n\n| conjunctions\n\nettä   | that\nja     | and\njos    | if\nkoska  | because\nkuin   | than\nmutta  | but\nniin   | so\nsekä   | and\nsillä  | for\ntai    | or\nvaan   | but\nvai    | or\nvaikka | although\n\n\n| prepositions\n\nkanssa  | with\nmukaan  | according to\nnoin    | about\npoikki  | across\nyli     | over, across\n\n| other\n\nkun    | when\nniin   | so\nnyt    | now\nitse   | self\n')
 
 class SearchFinnish(SearchLanguage):
     lang = 'fi'
     language_name = 'Finnish'
     js_stemmer_rawcode = 'finnish-stemmer.js'
     stopwords = finnish_stopwords
-
-    def init(self, options: dict[str, str]) -> None:
-        self.stemmer = snowballstemmer.stemmer('finnish')
-
-    def stem(self, word: str) -> str:
-        return self.stemmer.stemWord(word.lower())

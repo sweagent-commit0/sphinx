@@ -1,17 +1,11 @@
 """Domain indices."""
-
 from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, NamedTuple
-
 from sphinx.errors import SphinxError
-
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
     from sphinx.domains import Domain
-
 
 class IndexEntry(NamedTuple):
     name: str
@@ -21,7 +15,6 @@ class IndexEntry(NamedTuple):
     extra: str
     qualifier: str
     descr: str
-
 
 class Index(ABC):
     """
@@ -45,7 +38,6 @@ class Index(ABC):
        Index pages can be referred by domain name and index name via
        :rst:role:`ref` role.
     """
-
     name: str
     localname: str
     shortname: str | None = None
@@ -57,10 +49,7 @@ class Index(ABC):
         self.domain = domain
 
     @abstractmethod
-    def generate(
-        self,
-        docnames: Iterable[str] | None = None,
-    ) -> tuple[list[tuple[str, list[IndexEntry]]], bool]:
+    def generate(self, docnames: Iterable[str] | None=None) -> tuple[list[tuple[str, list[IndexEntry]]], bool]:
         """Get entries for the index.
 
         If ``docnames`` is given, restrict to entries referring to these
@@ -110,4 +99,4 @@ class Index(ABC):
         Qualifier and description are not rendered for some output formats such
         as LaTeX.
         """
-        raise NotImplementedError
+        pass

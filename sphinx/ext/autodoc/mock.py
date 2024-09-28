@@ -1,7 +1,5 @@
 """mock for autodoc"""
-
 from __future__ import annotations
-
 import contextlib
 import os
 import sys
@@ -9,22 +7,16 @@ from importlib.abc import Loader, MetaPathFinder
 from importlib.machinery import ModuleSpec
 from types import MethodType, ModuleType
 from typing import TYPE_CHECKING
-
 from sphinx.util import logging
 from sphinx.util.inspect import isboundmethod, safe_getattr
-
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
     from typing import Any
-
     from typing_extensions import TypeIs
-
 logger = logging.getLogger(__name__)
-
 
 class _MockObject:
     """Used by autodoc_mock_imports."""
-
     __display_name__ = '_MockObject'
     __name__ = ''
     __sphinx_mock__ = True
@@ -34,10 +26,7 @@ class _MockObject:
         if len(args) == 3 and isinstance(args[1], tuple):
             superclass = args[1][-1].__class__
             if superclass is cls:
-                # subclassing MockObject
-                return _make_subclass(args[0], superclass.__display_name__,
-                                      superclass=superclass, attributes=args[2])
-
+                return _make_subclass(args[0], superclass.__display_name__, superclass=superclass, attributes=args[2])
         return super().__new__(cls)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -69,21 +58,8 @@ class _MockObject:
     def __repr__(self) -> str:
         return self.__display_name__
 
-
-def _make_subclass(name: str, module: str, superclass: Any = _MockObject,
-                   attributes: Any = None, decorator_args: tuple[Any, ...] = ()) -> Any:
-    attrs = {'__module__': module,
-             '__display_name__': module + '.' + name,
-             '__name__': name,
-             '__sphinx_decorator_args__': decorator_args}
-    attrs.update(attributes or {})
-
-    return type(name, (superclass,), attrs)
-
-
 class _MockModule(ModuleType):
     """Used by autodoc_mock_imports."""
-
     __file__ = os.devnull
     __sphinx_mock__ = True
 
@@ -98,22 +74,12 @@ class _MockModule(ModuleType):
     def __repr__(self) -> str:
         return self.__name__
 
-
 class MockLoader(Loader):
     """A loader for mocking."""
 
     def __init__(self, finder: MockFinder) -> None:
         super().__init__()
         self.finder = finder
-
-    def create_module(self, spec: ModuleSpec) -> ModuleType:
-        logger.debug('[autodoc] adding a mock module as %s!', spec.name)
-        self.finder.mocked_modules.append(spec.name)
-        return _MockModule(spec.name)
-
-    def exec_module(self, module: ModuleType) -> None:
-        pass  # nothing to do
-
 
 class MockFinder(MetaPathFinder):
     """A finder for mocking."""
@@ -124,20 +90,9 @@ class MockFinder(MetaPathFinder):
         self.loader = MockLoader(self)
         self.mocked_modules: list[str] = []
 
-    def find_spec(self, fullname: str, path: Sequence[bytes | str] | None,
-                  target: ModuleType | None = None) -> ModuleSpec | None:
-        for modname in self.modnames:
-            # check if fullname is (or is a descendant of) one of our targets
-            if modname == fullname or fullname.startswith(modname + '.'):
-                return ModuleSpec(fullname, self.loader)
-
-        return None
-
     def invalidate_caches(self) -> None:
         """Invalidate mocked modules on sys.modules."""
-        for modname in self.mocked_modules:
-            sys.modules.pop(modname, None)
-
+        pass
 
 @contextlib.contextmanager
 def mock(modnames: list[str]) -> Iterator[None]:
@@ -147,57 +102,19 @@ def mock(modnames: list[str]) -> Iterator[None]:
         # mock modules are enabled here
         ...
     """
-    finder = MockFinder(modnames)
-    try:
-        sys.meta_path.insert(0, finder)
-        yield
-    finally:
-        sys.meta_path.remove(finder)
-        finder.invalidate_caches()
-
+    pass
 
 def ismockmodule(subject: Any) -> TypeIs[_MockModule]:
     """Check if the object is a mocked module."""
-    return isinstance(subject, _MockModule)
-
+    pass
 
 def ismock(subject: Any) -> bool:
     """Check if the object is mocked."""
-    # check the object has '__sphinx_mock__' attribute
-    try:
-        if safe_getattr(subject, '__sphinx_mock__', None) is None:
-            return False
-    except AttributeError:
-        return False
-
-    # check the object is mocked module
-    if isinstance(subject, _MockModule):
-        return True
-
-    # check the object is bound method
-    if isinstance(subject, MethodType) and isboundmethod(subject):
-        tmp_subject = subject.__func__
-    else:
-        tmp_subject = subject
-
-    try:
-        # check the object is mocked object
-        __mro__ = safe_getattr(type(tmp_subject), '__mro__', [])
-        if len(__mro__) > 2 and __mro__[-2] is _MockObject:
-            # A mocked object has a MRO that ends with (..., _MockObject, object).
-            return True
-    except AttributeError:
-        pass
-
-    return False
-
+    pass
 
 def undecorate(subject: _MockObject) -> Any:
     """Unwrap mock if *subject* is decorated by mocked object.
 
     If not decorated, returns given *subject* itself.
     """
-    if ismock(subject) and subject.__sphinx_decorator_args__:
-        return subject.__sphinx_decorator_args__[0]
-    else:
-        return subject
+    pass
