@@ -36,7 +36,23 @@ class ConfigValue(NamedTuple):
 
 def is_serializable(obj: object, *, _seen: frozenset[int]=frozenset()) -> bool:
     """Check if an object is serializable or not."""
-    pass
+    obj_id = id(obj)
+    if obj_id in _seen:
+        return True
+    new_seen = _seen | {obj_id}
+    if isinstance(obj, UNSERIALIZABLE_TYPES):
+        return False
+    elif isinstance(obj, (str, int, float, bool, type(None))):
+        return True
+    elif isinstance(obj, (list, tuple)):
+        return all(is_serializable(item, _seen=new_seen) for item in obj)
+    elif isinstance(obj, dict):
+        return all(is_serializable(key, _seen=new_seen) and is_serializable(value, _seen=new_seen) 
+                   for key, value in obj.items())
+    elif hasattr(obj, '__dict__'):
+        return is_serializable(obj.__dict__, _seen=new_seen)
+    else:
+        return True
 
 class ENUM:
     """Represents the candidates which a config value should be one of.
